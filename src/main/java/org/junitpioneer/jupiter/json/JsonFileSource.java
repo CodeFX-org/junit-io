@@ -32,7 +32,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
  *
  * <p>
  * For more details and examples, see
- * <a href="https://junit-pioneer.org/docs/cartesian-product/" target="_top">the documentation on <code>Cartesian product tests</code></a>
+ * <a href="https://junit-pioneer.org/docs/json/" target="_top">the documentation on <code>JSON tests</code></a>
  * </p>
  *
  * @see ArgumentsSource

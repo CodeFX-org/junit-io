@@ -10,5 +10,8 @@
       "name": "Imperial Speeder Bike",
       "length": 3
     }
-  ]
+  ],
+  "location": {
+    "name": "Tatooine"
+  }
 }

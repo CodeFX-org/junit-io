@@ -62,7 +62,7 @@ class JacksonNode implements Node {
 	}
 
 	@Override
-	public Object value() {
+	public Object value(Class<?> typeHint) {
 		if (node.isTextual()) {
 			return node.textValue();
 		} else if (node.isInt()) {
@@ -81,6 +81,8 @@ class JacksonNode implements Node {
 			return node.decimalValue();
 		} else if (node.isBigInteger()) {
 			return node.bigIntegerValue();
+		} else if (node.isObject()) {
+			return toType(typeHint);
 		}
 		return node;
 	}

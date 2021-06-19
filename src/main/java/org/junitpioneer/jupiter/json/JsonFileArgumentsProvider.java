@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -85,7 +86,16 @@ class JsonFileArgumentsProvider
 	private static Arguments createArguments(Method method, Node node) {
 		int parameterCount = method.getParameterCount();
 		if (parameterCount == 1) {
-			return Arguments.arguments(node.toType(method.getParameters()[0].getType()));
+			// When there is a single parameter the user might want to extract a single value or an entire type.
+			// When the parameter has the @Param annotation then a single value needs to be extracted
+			Param location = method.getParameters()[0].getAnnotation(Param.class);
+			if (location == null) {
+				// There is no location -> the node should be converted in the parameter type
+				return Arguments.arguments(node.toType(method.getParameters()[0].getType()));
+			}
+
+			// Otherwise thread this as method arguments
+			return new MethodArguments(method, node);
 		}
 		return new MethodArguments(method, node);
 	}
@@ -114,7 +124,12 @@ class JsonFileArgumentsProvider
 				} else {
 					name = parameter.getName();
 				}
-				arguments[i] = node.getNodeValue(name);
+				Optional<Node> requestedNode = node.getNode(name);
+				if (requestedNode.isPresent()) {
+					arguments[i] = requestedNode.get().value(parameter.getType());
+				} else {
+					arguments[i] = null;
+				}
 			}
 			return arguments;
 		}

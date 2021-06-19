@@ -46,7 +46,8 @@ class JsonFileSourceArgumentsProviderTests {
 							Collectors.mapping(TestDescriptor::getDisplayName, Collectors.toList())));
 
 		assertThat(displayNames)
-				.containsOnlyKeys("deconstructCustomerFromArray", "deconstructCustomerMultipleFiles", "singleCustomer",
+				.containsOnlyKeys("deconstructCustomerFromArray", "deconstructCustomerMultipleFiles",
+					"deconstructCustomerMultipleFilesComplexType", "singleCustomer", "singleCustomerName",
 					"customDataLocation");
 
 		assertThat(displayNames.get("deconstructCustomerFromArray")).containsExactly("[1] Luke, 172", "[2] Yoda, 66");
@@ -54,8 +55,13 @@ class JsonFileSourceArgumentsProviderTests {
 		assertThat(displayNames.get("deconstructCustomerMultipleFiles"))
 				.containsExactly("[1] 66, Yoda", "[2] 172, Luke");
 
+		assertThat(displayNames.get("deconstructCustomerMultipleFilesComplexType"))
+				.containsExactly("[1] Yoda, Location{name='unknown'}", "[2] Luke, Location{name='Tatooine'}");
+
 		assertThat(displayNames.get("singleCustomer"))
 				.containsExactly("[1] Customer{name='Luke', height=172}", "[2] Customer{name='Yoda', height=66}");
+
+		assertThat(displayNames.get("singleCustomerName")).containsExactly("[1] Luke", "[2] Yoda");
 
 		assertThat(displayNames.get("customDataLocation"))
 				.containsExactly("[1] Snowspeeder, 4.5", "[2] Imperial Speeder Bike, 3");
@@ -77,7 +83,6 @@ class JsonFileSourceArgumentsProviderTests {
 		@ParameterizedTest
 		@JsonFileSource(resources = "org/junitpioneer/jupiter/json/customers.json")
 		void deconstructCustomerFromArray(@Param("name") String name, @Param("height") int height) {
-
 			assertThat(Collections.singleton(tuple(name, height))).containsAnyOf(tuple("Luke", 172), tuple("Yoda", 66));
 		}
 
@@ -89,10 +94,26 @@ class JsonFileSourceArgumentsProviderTests {
 		}
 
 		@ParameterizedTest
+		@JsonFileSource(resources = { "org/junitpioneer/jupiter/json/customer-yoda.json",
+				"org/junitpioneer/jupiter/json/customer-luke.json", })
+		void deconstructCustomerMultipleFilesComplexType(@Param("name") String name,
+				@Param("location") Location location) {
+
+			assertThat(Collections.singleton(tuple(name, location.getName())))
+					.containsAnyOf(tuple("Luke", "Tatooine"), tuple("Yoda", "unknown"));
+		}
+
+		@ParameterizedTest
 		@JsonFileSource(resources = "org/junitpioneer/jupiter/json/customers.json")
 		void singleCustomer(Customer customer) {
 			assertThat(Collections.singleton(tuple(customer.getName(), customer.getHeight())))
 					.containsAnyOf(tuple("Luke", 172), tuple("Yoda", 66));
+		}
+
+		@ParameterizedTest
+		@JsonFileSource(resources = "org/junitpioneer/jupiter/json/customers.json")
+		void singleCustomerName(@Param("name") String customerName) {
+			assertThat(customerName).isIn("Luke", "Yoda");
 		}
 
 		@ParameterizedTest
@@ -205,6 +226,25 @@ class JsonFileSourceArgumentsProviderTests {
 		@Override
 		public String toString() {
 			return "Customer{" + "name='" + name + '\'' + ", height=" + height + '}';
+		}
+
+	}
+
+	static class Location {
+
+		private String name;
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public String toString() {
+			return "Location{" + "name='" + name + '\'' + '}';
 		}
 
 	}

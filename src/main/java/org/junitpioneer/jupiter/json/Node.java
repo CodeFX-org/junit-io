@@ -48,20 +48,11 @@ public interface Node {
 	Optional<Node> getNode(String name);
 
 	/**
-	 * Extract the value of the object node with the given name
-	 *
-	 * @param name the name of the value that should be extracted
-	 * @return the value for the given name
-	 */
-	default Object getNodeValue(String name) {
-		return getNode(name).map(Node::value).orElse(null);
-	}
-
-	/**
 	 * Get the value of the node.
 	 *
+	 * @param typeHint the potential type of the value
 	 * @return the node value
 	 */
-	Object value();
+	Object value(Class<?> typeHint);
 
 }

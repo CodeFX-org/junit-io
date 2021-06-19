@@ -1,4 +1,7 @@
 {
   "name": "Yoda",
-  "height": 66
+  "height": 66,
+  "location": {
+    "name": "unknown"
+  }
 }
