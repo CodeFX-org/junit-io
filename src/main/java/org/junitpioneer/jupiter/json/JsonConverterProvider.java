@@ -29,7 +29,8 @@ class JsonConverterProvider {
 
 	static JsonConverter getJsonConverter(ExtensionContext context) {
 		//TODO use context.getConfigurationParameter("junit.pioneer.json.converters") to pick a different converter
-		// TODO perhaps even add converter to the @JsonSource
+		// TODO perhaps even add converter to the @JsonFileSource
+		// TODO perhaps a new annotation @JsonConverter for picking the converter
 		if (jacksonPresent) {
 			return JacksonJsonConverter.getConverter();
 		}

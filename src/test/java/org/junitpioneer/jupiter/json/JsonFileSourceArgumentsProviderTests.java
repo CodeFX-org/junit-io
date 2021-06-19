@@ -11,8 +11,10 @@
 package org.junitpioneer.jupiter.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.junitpioneer.testkit.assertion.PioneerAssert.assertThat;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,19 +30,19 @@ import org.junitpioneer.testkit.ExecutionResults;
 import org.junitpioneer.testkit.PioneerTestKit;
 
 /**
- * Tests for {@link JsonSourceArgumentsProvider}
+ * Tests for {@link JsonFileArgumentsProvider}
  */
-class JsonSourceArgumentsProviderTests {
+class JsonFileSourceArgumentsProviderTests {
 
 	@Test
 	void assertAllValuesSupplied() {
-		ExecutionResults results = PioneerTestKit.executeTestClass(JsonSourceTestCases.class);
+		ExecutionResults results = PioneerTestKit.executeTestClass(JsonFileSourceTestCases.class);
 
 		Map<String, List<String>> displayNames = results
 				.dynamicallyRegisteredEvents()
 				.map(Event::getTestDescriptor)
 				.collect(Collectors
-						.groupingBy(JsonSourceArgumentsProviderTests::testSourceMethodName,
+						.groupingBy(JsonFileSourceArgumentsProviderTests::testSourceMethodName,
 							Collectors.mapping(TestDescriptor::getDisplayName, Collectors.toList())));
 
 		assertThat(displayNames)
@@ -70,27 +72,34 @@ class JsonSourceArgumentsProviderTests {
 	}
 
 	@Nested
-	class JsonSourceTestCases {
+	class JsonFileSourceTestCases {
 
 		@ParameterizedTest
-		@JsonSource(resources = "org/junitpioneer/jupiter/json/customers.json")
+		@JsonFileSource(resources = "org/junitpioneer/jupiter/json/customers.json")
 		void deconstructCustomerFromArray(@Param("name") String name, @Param("height") int height) {
+
+			assertThat(Collections.singleton(tuple(name, height))).containsAnyOf(tuple("Luke", 172), tuple("Yoda", 66));
 		}
 
 		@ParameterizedTest
-		@JsonSource(resources = { "org/junitpioneer/jupiter/json/customer-yoda.json",
+		@JsonFileSource(resources = { "org/junitpioneer/jupiter/json/customer-yoda.json",
 				"org/junitpioneer/jupiter/json/customer-luke.json", })
 		void deconstructCustomerMultipleFiles(@Param("height") int height, @Param("name") String name) {
+			assertThat(Collections.singleton(tuple(name, height))).containsAnyOf(tuple("Luke", 172), tuple("Yoda", 66));
 		}
 
 		@ParameterizedTest
-		@JsonSource(resources = "org/junitpioneer/jupiter/json/customers.json")
+		@JsonFileSource(resources = "org/junitpioneer/jupiter/json/customers.json")
 		void singleCustomer(Customer customer) {
+			assertThat(Collections.singleton(tuple(customer.getName(), customer.getHeight())))
+					.containsAnyOf(tuple("Luke", 172), tuple("Yoda", 66));
 		}
 
 		@ParameterizedTest
-		@JsonSource(resources = { "org/junitpioneer/jupiter/json/customer-luke.json" }, data = "vehicles")
+		@JsonFileSource(resources = { "org/junitpioneer/jupiter/json/customer-luke.json" }, data = "vehicles")
 		void customDataLocation(@Param("name") String name, @Param("length") double length) {
+			assertThat(Collections.singleton(tuple(name, length)))
+					.containsAnyOf(tuple("Snowspeeder", 4.5), tuple("Imperial Speeder Bike", 3d));
 		}
 
 	}
@@ -144,25 +153,25 @@ class JsonSourceArgumentsProviderTests {
 
 	static class InvalidJsonSource {
 
-		@JsonSource
+		@JsonFileSource
 		@ParameterizedTest
 		void noFilesOrResources() {
 
 		}
 
-		@JsonSource(resources = { "org/junitpioneer/jupiter/json/customer-yoda.json", "" })
+		@JsonFileSource(resources = { "org/junitpioneer/jupiter/json/customer-yoda.json", "" })
 		@ParameterizedTest
 		void emptyClasspathResource() {
 
 		}
 
-		@JsonSource(resources = "dummy-customer.json")
+		@JsonFileSource(resources = "dummy-customer.json")
 		@ParameterizedTest
 		void missingClasspathResource() {
 
 		}
 
-		@JsonSource(resources = { "org/junitpioneer/jupiter/json/customer-yoda.json", }, data = "dummy")
+		@JsonFileSource(resources = { "org/junitpioneer/jupiter/json/customer-yoda.json", }, data = "dummy")
 		@ParameterizedTest
 		void dataLocationMissing() {
 
@@ -170,6 +179,8 @@ class JsonSourceArgumentsProviderTests {
 
 	}
 
+	// This class uses the Java Bean convention since the creation of the object is done by the Json Parsing library
+	// We want to avoid adding specific Json Library annotations to this class, only to support Java record style
 	static class Customer {
 
 		private String name;

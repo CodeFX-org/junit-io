@@ -27,25 +27,25 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.support.AnnotationConsumer;
 import org.junit.platform.commons.PreconditionViolationException;
-import org.junit.platform.commons.util.Preconditions;
+import org.junitpioneer.internal.PioneerPreconditions;
 import org.junitpioneer.jupiter.CartesianAnnotationConsumer;
 
 /**
  * The reading of the resources / files is heavily inspired by {@link org.junit.jupiter.params.provider.CsvFileArgumentsProvider}.
  */
-class JsonSourceArgumentsProvider
-		implements ArgumentsProvider, AnnotationConsumer<JsonSource>, CartesianAnnotationConsumer<JsonSource> {
+class JsonFileArgumentsProvider
+		implements ArgumentsProvider, AnnotationConsumer<JsonFileSource>, CartesianAnnotationConsumer<JsonFileSource> {
 
 	private String dataLocation;
 	private List<Source> sources;
 
 	@Override
-	public void accept(JsonSource jsonSource) {
+	public void accept(JsonFileSource jsonSource) {
 		Stream<Source> resources = Arrays
 				.stream(jsonSource.resources())
-				.map(JsonSourceArgumentsProvider::classpathResource);
+				.map(JsonFileArgumentsProvider::classpathResource);
 
-		Stream<Source> files = Arrays.stream(jsonSource.files()).map(JsonSourceArgumentsProvider::fileResource);
+		Stream<Source> files = Arrays.stream(jsonSource.files()).map(JsonFileArgumentsProvider::fileResource);
 
 		this.sources = Stream.concat(resources, files).collect(Collectors.toList());
 		this.dataLocation = jsonSource.data();
@@ -57,7 +57,7 @@ class JsonSourceArgumentsProvider
 
 		Method method = context.getRequiredTestMethod();
 
-		return Preconditions
+		return PioneerPreconditions
 				.notEmpty(this.sources, "Resources or files must not be empty")
 				.stream()
 				.map(source -> source.open(context))
@@ -129,16 +129,16 @@ class JsonSourceArgumentsProvider
 
 	private static Source classpathResource(String resource) {
 		return context -> {
-			Preconditions.notBlank(resource, () -> "Classpath resource must not be null or blank");
+			PioneerPreconditions.notBlank(resource, () -> "Classpath resource must not be null or blank");
 			InputStream stream = context.getRequiredTestClass().getClassLoader().getResourceAsStream(resource);
-			Preconditions.notNull(stream, () -> "Classpath resource [" + resource + "] does not exist");
+			PioneerPreconditions.notNull(stream, () -> "Classpath resource [" + resource + "] does not exist");
 			return stream;
 		};
 	}
 
 	private static Source fileResource(String file) {
 		return context -> {
-			Preconditions.notBlank(file, () -> "File must not be null or blank");
+			PioneerPreconditions.notBlank(file, () -> "File must not be null or blank");
 			try {
 				return Files.newInputStream(Paths.get(file));
 			}

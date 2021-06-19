@@ -43,9 +43,9 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@ArgumentsSource(JsonSourceArgumentsProvider.class)
-@Repeatable(JsonSource.JsonSources.class)
-public @interface JsonSource {
+@ArgumentsSource(JsonFileArgumentsProvider.class)
+@Repeatable(JsonFileSource.JsonSources.class)
+public @interface JsonFileSource {
 
 	/**
 	 * The JSON classpath resources to use as the sources of arguments; must not
@@ -70,7 +70,7 @@ public @interface JsonSource {
 	@Documented
 	@interface JsonSources {
 
-		JsonSource[] value();
+		JsonFileSource[] value();
 
 	}
 
